@@ -3,53 +3,33 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
+/*   By: dzurita <dzurita@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/26 16:18:04 by dzurita           #+#    #+#             */
-/*   Updated: 2024/03/29 17:10:05 by dzurita          ###   ########.fr       */
+/*   Updated: 2024/06/18 16:54:32 by dzurita          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "philo.h"
-
-void *mi_funcion(void *arg) 
-{
-    thread_args *args = (thread_args *)arg;
-    printf("¡Hola desde el hilo %d!\n", args->index);
-    return(0);
-}
+# include <stdio.h>
 
 int main(int ac, char **av)
 {
-    t_data      content;
-    pthread_t   hilo[5];
-    thread_args *args;
+    t_table     table;
+    t_philo     philo; 
     int result;
-    int i;
+    int i; 
     
     if (ac < 5)
         philo_error("Missing arguments\n");
     if (ac > 6)
         philo_error("Too many arguments\n");
-    make_arguments(av, &content);
+    make_arguments(av, &table);
+    init_table(&table);
     i = 0;
-    while (i < 5)
+    while (i < table.philo_nbrs)
     {
-        args = malloc(sizeof(thread_args));
-        if (args == NULL) {
-            return 1;
-        }
-        args->index = i;
-        args->content = &content;    
-        result = pthread_create(&hilo[i], NULL, mi_funcion, args);
-        if(result)
-            return(1);
-        i++;
-    }
-    i = 0;
-    while (i > 5)
-    {
-        pthread_join(hilo[i], NULL);
+        printf ("philo{%d} id [%d] fork0 [%d] fork1 [%d] n_meals [%d]\n", i, table.philo[i]->id, table.philo[i]->forks[0], table.philo[i]->forks[1], table.philo[i]->n_meals);
         i++;
     }
 }

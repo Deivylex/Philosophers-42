@@ -53,7 +53,7 @@ int	ft_check_parameters(char *str)
 			return (1);
 	return (0);
 }
-void    make_arguments(char **av, t_data *content)
+void    make_arguments(char **av, t_table *content)
 {
 	int i;
 
@@ -79,4 +79,23 @@ void    make_arguments(char **av, t_data *content)
         content->max_meals = ft_atol(av[5]);
     else
         content->max_meals = -1;
+}
+
+void error_cleaning(t_table *table, char type)
+{
+	int i;
+
+	if (type == 'm')
+		printf("fatal error malloc\n");
+	if (type == 'x')
+		printf("fatal error mutex\n");
+	if (table->forks_lock)
+		free (table->forks_lock);
+	i = 0;
+	while (table->philo[i]) 
+	{
+		free (table->philo[i]);
+		i++;
+	}
+	exit(1);
 }
