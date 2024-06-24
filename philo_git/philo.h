@@ -43,5 +43,6 @@ void    philo_error(const char *str);
 void    make_arguments(char **av, t_table *content);
 void    init_table(t_table *table);
 void    error_cleaning (t_table *table, char type);
+void	ft_putstr_fd(char *s, int fd);
 
 #endif

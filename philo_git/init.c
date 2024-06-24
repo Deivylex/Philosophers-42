@@ -6,13 +6,28 @@
 /*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/19 12:45:33 by dzurita           #+#    #+#             */
-/*   Updated: 2024/06/20 14:48:39 by dzurita          ###   ########.fr       */
+/*   Updated: 2024/06/24 17:10:28 by dzurita          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int contador = 0;
+long    get_time(void)
+{
+    struct timeval  tv;
+    
+    if (gettimeofday(&tv, NULL) == -1)
+        return (-1);
+    return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+}
+void    precise_sleep_ms(long time)
+{
+    long    delay_ms;
+
+    delay_ms = get_time() + time;//tiempo total del retardo
+    while (get_time() < delay_ms)//loop para crear el delay en el programa
+        usleep(100);
+}
 
 void    fill_philos(t_table *table)
 {
@@ -74,10 +89,10 @@ void    init_mutex_check(t_table *table)
 }
 void    eating_step(t_philo *philo)
 {
-    //conotinuar con la rutina
+    ft_putstr_fd("philo is eating\n", 1);
 }
 
-void    *philo_simulation(void *arg)
+void    *philo_simulation(void *arg) //funcion principal donde crea la simulacion
 {
     t_philo *philo;
 
@@ -85,17 +100,22 @@ void    *philo_simulation(void *arg)
 
 
     pthread_mutex_lock(&philo->meal_lock);
-    contador++;
-    printf("%d\n", contador);
+    philo->last_meal = philo->table->start_time;
     pthread_mutex_unlock(&philo->meal_lock);
-    return NULL;
+    while (1)
+    {
+        //check if philo is dead to finis the loop;
+        //philo eating (take the fork)
+        // philo sleep another thinking
+    }
+    return (NULL);
 }
 
 void    create_threads(t_table *table)
 {
     int i;
 
-    table->start_time = 0;
+    table->start_time = get_time();
     i = -1;
     while (++i < table->philo_nbrs)
     {
