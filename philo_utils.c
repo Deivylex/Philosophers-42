@@ -99,3 +99,10 @@ void error_cleaning(t_table *table, char type)
 	}
 	exit(1);
 }
+void	ft_putstr_fd(char *s, int fd)
+{
+	if (!s)
+		return ;
+	while (*s)
+		ft_putchar_fd(*s++, fd);
+}

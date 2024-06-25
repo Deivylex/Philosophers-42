@@ -31,6 +31,7 @@ typedef struct s_table
     long            time_eat;
     long            time_sleep;
     long            max_meals;
+    long            start_time;
     t_philo         **philo;
     pthread_mutex_t dead_lock;
 	pthread_mutex_t	*forks_lock;
@@ -41,6 +42,7 @@ typedef struct s_table
 void    philo_error(const char *str);
 void    make_arguments(char **av, t_table *content);
 void    init_table(t_table *table);
-void    error_cleaning(t_table *table, char type);
+void    error_cleaning (t_table *table, char type);
+void	ft_putstr_fd(char *s, int fd);
 
 #endif
