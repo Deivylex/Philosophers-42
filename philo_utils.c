@@ -101,8 +101,11 @@ void error_cleaning(t_table *table, char type)
 }
 void	ft_putstr_fd(char *s, int fd)
 {
+	int i;
+
 	if (!s)
 		return ;
-	while (*s)
-		ft_putchar_fd(*s++, fd);
+	i = -1;
+	while (s[++i])
+		write(fd, &s[i], 1);
 }

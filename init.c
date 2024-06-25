@@ -6,7 +6,7 @@
 /*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/19 12:45:33 by dzurita           #+#    #+#             */
-/*   Updated: 2024/06/24 17:10:28 by dzurita          ###   ########.fr       */
+/*   Updated: 2024/06/25 16:05:07 by dzurita          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,15 +102,26 @@ void    *philo_simulation(void *arg) //funcion principal donde crea la simulacio
     pthread_mutex_lock(&philo->meal_lock);
     philo->last_meal = philo->table->start_time;
     pthread_mutex_unlock(&philo->meal_lock);
-    while (1)
+    printf("%d\n", philo->last_meal);
+/*     while (1)
     {
         //check if philo is dead to finis the loop;
         //philo eating (take the fork)
         // philo sleep another thinking
-    }
+    } */
     return (NULL);
 }
+void    join_thread(t_table *table, int lim)
+{
+    int i;
 
+    i = -1;
+    while (++i < lim)
+	{
+		if (pthread_join(table->philo[i]->thread, NULL))
+			printf("erro join\n");
+	}
+}
 void    create_threads(t_table *table)
 {
     int i;
@@ -122,13 +133,6 @@ void    create_threads(t_table *table)
         pthread_create(&table->philo[i]->thread, NULL, &philo_simulation,
                     table->philo[i]);
     }
-    i = -1;
-    while (++i < table->philo_nbrs)
-    {
-        pthread_join(table->philo[i]->thread, NULL);
-    }
-    
-    
 }
 
 void    init_table(t_table *table)
@@ -149,5 +153,4 @@ void    init_table(t_table *table)
     init_mutex_fork(table);
     init_mutex_check(table);
     create_threads(table);
-    printf("cont %d\n", contador);
 }
