@@ -6,7 +6,7 @@
 /*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/19 12:45:33 by dzurita           #+#    #+#             */
-/*   Updated: 2024/06/25 16:05:07 by dzurita          ###   ########.fr       */
+/*   Updated: 2024/06/26 15:01:21 by dzurita          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,21 @@ void    init_mutex_check(t_table *table)
 }
 void    eating_step(t_philo *philo)
 {
-    ft_putstr_fd("philo is eating\n", 1);
+    if (philo->id % 2 == 0)
+    {
+        pthread_mutex_lock(&philo->table->forks_lock[philo->forks[0]]);
+        printf("time [%d] philo[%d] take left fork\n", (get_time() - philo->table->start_time) , philo->id);
+    }
+    pthread_mutex_lock(&philo->table->forks_lock[philo->forks[1]]);
+    printf("time [%d] philo[%d] take right fork\n", (get_time() - philo->table->start_time), philo->id);
+    if (philo->id % 2)
+    {
+        pthread_mutex_lock(&philo->table->forks_lock[philo->forks[0]]);
+        printf("time [%d] philo[%d] take left fork\n", (get_time() - philo->table->start_time), philo->id);
+    }
+    printf("time [%d] philo[%d] is eating\n", (get_time() - philo->table->start_time) , philo->id);
+    pthread_mutex_unlock(&philo->table->forks_lock[philo->forks[0]]);
+	pthread_mutex_unlock(&philo->table->forks_lock[philo->forks[1]]);
 }
 
 void    *philo_simulation(void *arg) //funcion principal donde crea la simulacion
@@ -102,13 +116,16 @@ void    *philo_simulation(void *arg) //funcion principal donde crea la simulacio
     pthread_mutex_lock(&philo->meal_lock);
     philo->last_meal = philo->table->start_time;
     pthread_mutex_unlock(&philo->meal_lock);
-    printf("%d\n", philo->last_meal);
-/*     while (1)
+    //printf("%d\n", philo->last_meal);
+    int i = 0;
+    while (i < 3)
     {
+        eating_step(philo);
         //check if philo is dead to finis the loop;
         //philo eating (take the fork)
         // philo sleep another thinking
-    } */
+        i++;
+    }
     return (NULL);
 }
 void    join_thread(t_table *table, int lim)
