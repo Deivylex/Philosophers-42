@@ -6,22 +6,27 @@
 /*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/19 12:45:07 by dzurita           #+#    #+#             */
-/*   Updated: 2024/07/03 16:26:51 by dzurita          ###   ########.fr       */
+/*   Updated: 2024/07/03 19:58:13 by dzurita          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	philo_error(char *str)
+void	philo_error(t_table *table, char *str)
 {
-	ft_putstr_fd(str, 2);
-	exit(0);
+	if (table->exit_status == 0)
+	{
+		ft_putstr_fd(str, 2);
+		table->exit_status = 1;
+	}
 }
 
 void	join_thread(t_table *table, int lim)
 {
 	int	i;
 
+	if (table->exit_status)
+		return ;
 	i = -1;
 	while (++i < lim)
 	{
@@ -34,6 +39,8 @@ void	free_philos(t_table *table)
 {
 	int	i;
 
+	if (table->exit_status)
+		return ;
 	i = -1;
 	while (++i < table->philo_nbrs)
 	{
@@ -53,12 +60,14 @@ int	main(int ac, char **av)
 {
 	t_table	table;
 
+	table.exit_status = 0;
 	if (ac < 5)
-		philo_error("Missing arguments\n");
+		philo_error(&table, "Missing arguments\n");
 	if (ac > 6)
-		philo_error("Too many arguments\n");
+		philo_error(&table, "Too many arguments\n");
 	make_arguments(av, &table);
 	init_table(&table);
 	join_thread(&table, table.philo_nbrs);
 	free_philos(&table);
+	return (table.exit_status);
 }

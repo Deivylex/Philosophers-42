@@ -6,13 +6,13 @@
 /*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/03 14:46:26 by dzurita           #+#    #+#             */
-/*   Updated: 2024/07/03 16:44:54 by dzurita          ###   ########.fr       */
+/*   Updated: 2024/07/03 19:52:51 by dzurita          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "philo.h"
+#include "philo.h"
 
-long	ft_atol(const char *nptr)
+long	ft_atol(t_table *table, const char *nptr)
 {
 	int		sign;
 	long	num;
@@ -32,11 +32,11 @@ long	ft_atol(const char *nptr)
 		num = num * 10 + (*nptr - '0');
 		nptr++;
 	}
-    num *= sign;
-    if (num <= 0 || num > 2147483647)
+	num *= sign;
+	if (num <= 0 || num > 2147483647)
 	{
-        philo_error("Invalid numbers\n");
-		exit(1);
+		philo_error(table, "Invalid numbers\n");
+		return (-1);
 	}
 	return (num);
 }
@@ -52,62 +52,65 @@ int	ft_check_parameters(char *str)
 			return (1);
 	return (0);
 }
-void    make_arguments(char **av, t_table *content)
-{
-	int i;
 
-	i = 1;
-	while (av[i])
+void	make_arguments(char **av, t_table *content)
+{
+	int	i;
+
+	if (content->exit_status)
+		return ;
+	i = 0;
+	while (av[++i])
 	{
 		if (ft_check_parameters(av[i]))
-			philo_error("Syntax error\n");
-		i++;
+			philo_error(content, "Syntax error\n");
 	}
-    content->philo_nbrs = ft_atol(av[1]);
+	content->philo_nbrs = ft_atol(content, av[1]);
 	i = 2;
 	while (i < 5)
 	{
-		if ((ft_atol(av[i]) * MS) < 60 * MS)
-			philo_error("Timestamps need to be mayor tham 60ms\n");
+		if ((ft_atol(content, av[i]) * MS) < 60 * MS)
+			philo_error(content, "Timestamps need to be mayor tham 60ms\n");
 		i++;
 	}
-    content->time_die = ft_atol(av[2]);
-    content->time_eat = ft_atol(av[3]);
-    content->time_sleep = ft_atol(av[4]);
-    if (av[5])
-        content->max_meals = ft_atol(av[5]);
-    else
-        content->max_meals = -1;
+	content->time_die = ft_atol(content, av[2]);
+	content->time_eat = ft_atol(content, av[3]);
+	content->time_sleep = ft_atol(content, av[4]);
+	if (av[5])
+		content->max_meals = ft_atol(content, av[5]);
+	else
+		content->max_meals = -1;
 }
 
-void error_cleaning(t_table *table, char type)
+void	error_cleaning(t_table *table, char type)
 {
-	int i;
+	int	i;
 
+	if (table->exit_status)
+		return ;
 	if (type == 'm')
 		ft_putstr_fd("fatal error malloc\n", 2);
 	if (type == 'x')
 		ft_putstr_fd("fatal error mutex\n", 2);
-	if (type  ==  'j')
+	if (type == 'j')
 		ft_putstr_fd("fatal error pthread join\n", 2);
 	if (type == 'p')
 		ft_putstr_fd("fatal error creating theread\n", 2);
-	if (table && table->forks_lock)
-		free (table->forks_lock);	
-	if (table && table->philo)
+	if (table->forks_lock)
+		free (table->forks_lock);
+	if (table->philo[0])
 	{
 		i = -1;
 		while (++i < table->philo_nbrs && table->philo[i])
 			free(table->philo[i]);
 		free(table->philo);
 	}
-	if (type == 'a')
-		return ;
-	exit (1);
+	table->exit_status = 1;
 }
+
 void	ft_putstr_fd(char *s, int fd)
 {
-	int i;
+	int	i;
 
 	if (!s)
 		return ;
