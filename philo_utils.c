@@ -1,27 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo_utils.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/03 14:46:26 by dzurita           #+#    #+#             */
+/*   Updated: 2024/07/03 16:44:54 by dzurita          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 # include "philo.h"
-
-void    philo_error(const char *str)
-{
-    printf("%s", str);
-    exit(1);
-}
-size_t	ft_nbr_len(const	char *s)
-{
-	size_t	i;
-
-	i = 0;
-	while (s[i])
-		i++;
-	return (i);
-}
 
 long	ft_atol(const char *nptr)
 {
 	int		sign;
 	long	num;
 
-	if (ft_nbr_len(nptr) > 10)
-		philo_error("Number too big\n");
 	while ((*nptr == ' ') || (*nptr >= '\t' && *nptr <= '\r'))
 		nptr++;
 	sign = 1;
@@ -39,9 +34,13 @@ long	ft_atol(const char *nptr)
 	}
     num *= sign;
     if (num <= 0 || num > 2147483647)
+	{
         philo_error("Invalid numbers\n");
+		exit(1);
+	}
 	return (num);
 }
+
 int	ft_check_parameters(char *str)
 {
 	if (!(*str == '+' || *str == '-' || (*str >= '0' && *str <= '9')))
@@ -68,13 +67,13 @@ void    make_arguments(char **av, t_table *content)
 	i = 2;
 	while (i < 5)
 	{
-		if ((ft_atol(av[i]) * ms) < 60 * ms)
-			philo_error("Timestamps need to be mayor tham 60ms");
+		if ((ft_atol(av[i]) * MS) < 60 * MS)
+			philo_error("Timestamps need to be mayor tham 60ms\n");
 		i++;
 	}
-    content->time_die = ft_atol(av[2]) * ms;
-    content->time_eat = ft_atol(av[3]) * ms;
-    content->time_sleep = ft_atol(av[4]) * ms;
+    content->time_die = ft_atol(av[2]);
+    content->time_eat = ft_atol(av[3]);
+    content->time_sleep = ft_atol(av[4]);
     if (av[5])
         content->max_meals = ft_atol(av[5]);
     else
@@ -86,18 +85,25 @@ void error_cleaning(t_table *table, char type)
 	int i;
 
 	if (type == 'm')
-		printf("fatal error malloc\n");
+		ft_putstr_fd("fatal error malloc\n", 2);
 	if (type == 'x')
-		printf("fatal error mutex\n");
-	if (table->forks_lock)
-		free (table->forks_lock);
-	i = 0;
-	while (table->philo[i]) 
+		ft_putstr_fd("fatal error mutex\n", 2);
+	if (type  ==  'j')
+		ft_putstr_fd("fatal error pthread join\n", 2);
+	if (type == 'p')
+		ft_putstr_fd("fatal error creating theread\n", 2);
+	if (table && table->forks_lock)
+		free (table->forks_lock);	
+	if (table && table->philo)
 	{
-		free (table->philo[i]);
-		i++;
+		i = -1;
+		while (++i < table->philo_nbrs && table->philo[i])
+			free(table->philo[i]);
+		free(table->philo);
 	}
-	exit(1);
+	if (type == 'a')
+		return ;
+	exit (1);
 }
 void	ft_putstr_fd(char *s, int fd)
 {

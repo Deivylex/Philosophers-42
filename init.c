@@ -6,45 +6,30 @@
 /*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/19 12:45:33 by dzurita           #+#    #+#             */
-/*   Updated: 2024/06/26 15:01:21 by dzurita          ###   ########.fr       */
+/*   Updated: 2024/07/03 14:37:14 by dzurita          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-long    get_time(void)
-{
-    struct timeval  tv;
-    
-    if (gettimeofday(&tv, NULL) == -1)
-        return (-1);
-    return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
-}
-void    precise_sleep_ms(long time)
-{
-    long    delay_ms;
-
-    delay_ms = get_time() + time;//tiempo total del retardo
-    while (get_time() < delay_ms)//loop para crear el delay en el programa
-        usleep(100);
-}
-
-void    fill_philos(t_table *table)
+static void    fill_philos(t_table *table)
 {
     int i;
 
     i = -1;
     while (++i < table->philo_nbrs)
     {
-        table->philo[i]->id = i + 1;
-        table->philo[i]->n_meals = 0;
-        table->philo[i]->forks[0] = i;
-        table->philo[i]->forks[1] = i + 1;
+		table->philo[i]->id = i + 1;
+		table->philo[i]->n_meals = 0;
+		table->philo[i]->forks[0] = i;
+		table->philo[i]->forks[1] = i + 1;
+		if (i == table->philo_nbrs - 1)
+			table->philo[i]->forks[1] = 0;
         table->philo[i]->table = table;
     }   
 }
 
-void    init_mutex_fork(t_table *table)
+static void    init_mutex_fork(t_table *table)
 {
     int i;
 
@@ -60,9 +45,11 @@ void    init_mutex_fork(t_table *table)
                 pthread_mutex_destroy(&table->forks_lock[i]);
             error_cleaning(table, 'x');
         }
-    }   
+    }
+    if (pthread_mutex_init(&table->dead_lock, NULL))
+		return ;  
 }
-void    init_mutex_check(t_table *table)
+static void    init_mutex_check(t_table *table)
 {
     int i;
 
@@ -87,68 +74,21 @@ void    init_mutex_check(t_table *table)
         }
     }
 }
-void    eating_step(t_philo *philo)
-{
-    if (philo->id % 2 == 0)
-    {
-        pthread_mutex_lock(&philo->table->forks_lock[philo->forks[0]]);
-        printf("time [%d] philo[%d] take left fork\n", (get_time() - philo->table->start_time) , philo->id);
-    }
-    pthread_mutex_lock(&philo->table->forks_lock[philo->forks[1]]);
-    printf("time [%d] philo[%d] take right fork\n", (get_time() - philo->table->start_time), philo->id);
-    if (philo->id % 2)
-    {
-        pthread_mutex_lock(&philo->table->forks_lock[philo->forks[0]]);
-        printf("time [%d] philo[%d] take left fork\n", (get_time() - philo->table->start_time), philo->id);
-    }
-    printf("time [%d] philo[%d] is eating\n", (get_time() - philo->table->start_time) , philo->id);
-    pthread_mutex_unlock(&philo->table->forks_lock[philo->forks[0]]);
-	pthread_mutex_unlock(&philo->table->forks_lock[philo->forks[1]]);
-}
 
-void    *philo_simulation(void *arg) //funcion principal donde crea la simulacion
-{
-    t_philo *philo;
-
-    philo = arg;
-
-
-    pthread_mutex_lock(&philo->meal_lock);
-    philo->last_meal = philo->table->start_time;
-    pthread_mutex_unlock(&philo->meal_lock);
-    //printf("%d\n", philo->last_meal);
-    int i = 0;
-    while (i < 3)
-    {
-        eating_step(philo);
-        //check if philo is dead to finis the loop;
-        //philo eating (take the fork)
-        // philo sleep another thinking
-        i++;
-    }
-    return (NULL);
-}
-void    join_thread(t_table *table, int lim)
-{
-    int i;
-
-    i = -1;
-    while (++i < lim)
-	{
-		if (pthread_join(table->philo[i]->thread, NULL))
-			printf("erro join\n");
-	}
-}
-void    create_threads(t_table *table)
+static void    create_threads(t_table *table)
 {
     int i;
 
     table->start_time = get_time();
     i = -1;
-    while (++i < table->philo_nbrs)
+     while (++i < table->philo_nbrs)
     {
-        pthread_create(&table->philo[i]->thread, NULL, &philo_simulation,
-                    table->philo[i]);
+        if (pthread_create(&table->philo[i]->thread, NULL, &philo_simulation,
+                    table->philo[i]))
+        {
+            join_thread(table, i);
+            error_cleaning(table, 'p');
+        }
     }
 }
 
@@ -156,6 +96,7 @@ void    init_table(t_table *table)
 {
     int i;
 
+    table->dead = 0;
     table->philo = malloc(sizeof(t_philo *) * table->philo_nbrs);
     if (table->philo == NULL)
         error_cleaning(table, 'm');

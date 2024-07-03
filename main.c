@@ -6,31 +6,59 @@
 /*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/19 12:45:07 by dzurita           #+#    #+#             */
-/*   Updated: 2024/06/25 16:04:58 by dzurita          ###   ########.fr       */
+/*   Updated: 2024/07/03 16:26:51 by dzurita          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "philo.h"
-# include <stdio.h>
+#include "philo.h"
 
-int main(int ac, char **av)
+void	philo_error(char *str)
 {
-    t_table     table;
-    t_philo     philo; 
-    int result;
-    int i; 
-    
-    if (ac < 5)
-        philo_error("Missing arguments\n");
-    if (ac > 6)
-        philo_error("Too many arguments\n");
-    make_arguments(av, &table);
-    init_table(&table);
-    join_thread(&table, table.philo_nbrs);
-/*     i = 0;
-    while (i < table.philo_nbrs)
-    {
-        printf ("philo{%d} id [%d] fork0 [%d] fork1 [%d] n_meals [%d]\n", i, table.philo[i]->id, table.philo[i]->forks[0], table.philo[i]->forks[1], table.philo[i]->n_meals);
-        i++;
-    } */
+	ft_putstr_fd(str, 2);
+	exit(0);
+}
+
+void	join_thread(t_table *table, int lim)
+{
+	int	i;
+
+	i = -1;
+	while (++i < lim)
+	{
+		if (pthread_join(table->philo[i]->thread, NULL))
+			error_cleaning(table, 'j');
+	}
+}
+
+void	free_philos(t_table *table)
+{
+	int	i;
+
+	i = -1;
+	while (++i < table->philo_nbrs)
+	{
+		pthread_mutex_destroy(&table->forks_lock[i]);
+		pthread_mutex_destroy(&table->philo[i]->meal_lock);
+		pthread_mutex_destroy(&table->philo[i]->time_lock);
+	}
+	pthread_mutex_init(&table->dead_lock, NULL);
+	free (table->forks_lock);
+	i = -1;
+	while (++i < table->philo_nbrs && table->philo[i])
+		free(table->philo[i]);
+	free(table->philo);
+}
+
+int	main(int ac, char **av)
+{
+	t_table	table;
+
+	if (ac < 5)
+		philo_error("Missing arguments\n");
+	if (ac > 6)
+		philo_error("Too many arguments\n");
+	make_arguments(av, &table);
+	init_table(&table);
+	join_thread(&table, table.philo_nbrs);
+	free_philos(&table);
 }
