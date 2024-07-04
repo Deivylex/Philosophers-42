@@ -6,7 +6,7 @@
 /*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/19 12:45:07 by dzurita           #+#    #+#             */
-/*   Updated: 2024/07/04 12:14:11 by dzurita          ###   ########.fr       */
+/*   Updated: 2024/07/04 15:21:34 by dzurita          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void	free_philos(t_table *table)
 		pthread_mutex_destroy(&table->philo[i]->meal_lock);
 		pthread_mutex_destroy(&table->philo[i]->time_lock);
 	}
-	pthread_mutex_init(&table->dead_lock, NULL);
+	pthread_mutex_destroy(&table->dead_lock);
 	free (table->forks_lock);
 	i = -1;
 	while (++i < table->philo_nbrs && table->philo[i])
@@ -69,6 +69,5 @@ int	main(int ac, char **av)
 	init_table(&table);
 	join_thread(&table, table.philo_nbrs);
 	free_philos(&table);
-	error_mutex(&table, MUTEX_FORK, 5);
 	return (table.exit_status);
 }
