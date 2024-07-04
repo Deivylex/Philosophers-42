@@ -6,7 +6,7 @@
 /*   By: dzurita <dzurita@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/19 12:45:07 by dzurita           #+#    #+#             */
-/*   Updated: 2024/07/03 19:58:13 by dzurita          ###   ########.fr       */
+/*   Updated: 2024/07/04 12:14:11 by dzurita          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,5 +69,6 @@ int	main(int ac, char **av)
 	init_table(&table);
 	join_thread(&table, table.philo_nbrs);
 	free_philos(&table);
+	error_mutex(&table, MUTEX_FORK, 5);
 	return (table.exit_status);
 }
